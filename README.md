@@ -20,3 +20,6 @@ To use the software, in the root directory, run
 ```bash
 pip install -e .
 ```
+
+## License
+supervoxel-loss is licensed under the MIT License.
