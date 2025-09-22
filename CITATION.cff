@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- given-names: "Allen Institute for Neural Dynamics"
+title: "aind-library-template"
+version: "v0.4.7"
+date-released: 2025-06-29
+url: "https://github.com/AllenNeuralDynamics/aind-library-template"
