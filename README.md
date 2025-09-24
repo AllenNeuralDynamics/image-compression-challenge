@@ -11,10 +11,11 @@ Add description...
 
 ## Prepare Submission
 
-After running your compression algorithm on the following image blocks: [block_004](s3://aind-benchmark-data/3d-image-compression/blocks/block_004/input.zarr/), follow these instructions to submit your results.
+After running your compression algorithm on the provided test image blocks (e.g., block_004
+), submit your results in a single ZIP archive with the following structure:
 
-=
-Your submission must be a single ZIP archive with the following structure:
+After running your compression algorithm on the following image blocks: [block_004](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_004/), submit your results in a single ZIP archive with the following structure:
+
 - **Compressed Images**
   - Format: Any
   - Filename: `block_{block_num}.{extension}`
