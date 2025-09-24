@@ -19,8 +19,8 @@ Your submission must be a single ZIP archive with the following structure:
 - **Segmentations**
   - Format: `.tiff`
   - Filename: `segmentation_{block_id}.tiff`
-  - Must be generated using the provided segmentation model that can be downloaded at [insert link]().
-  - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to generate segmentations. Follow the steps in the “Predict” section of its README to run the model and use default parameters of the routine "inference.predict".
+  - Generate segmentations using the provided model ([download here](insert link)).  
+  - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to compute affinity maps, and convert them to segmentations following the “Predict” section of the README with default `inference.predict` parameters.
 
 - **SWCs**
   - Format: `.zip`
