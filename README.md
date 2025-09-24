@@ -29,16 +29,16 @@ Your submission must be a single ZIP archive with the following structure:
 
 
 **Example of Submission Layout**
-```bash
-submission.zip
-├── block_005.zarr
-├── segmentation_005.tiff
-├── skeletons_005.zip
-├── ...
-├── block_009.zarr
-├── segmentation_009.tiff
-└── skeletons_009.zip
-```
+<blockquote>
+  submission.zip
+  ├── block_005.zarr
+  ├── segmentation_005.tiff
+  ├── skeletons_005.zip
+  ├── ...
+  ├── block_009.zarr
+  ├── segmentation_009.tiff
+  └── skeletons_009.zip
+</blockquote>
 
 ## Score Submission
 Add description...
