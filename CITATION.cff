@@ -1,8 +1,0 @@
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-authors:
-- given-names: "Allen Institute for Neural Dynamics"
-title: "image-compression-challenge"
-version: "v0.0.0"
-date-release: 2025-09-22
-url: "https://github.com/AllenNeuralDynamics/image-compression-challenge"
