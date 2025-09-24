@@ -10,7 +10,13 @@
 Add description...
 
 ## Prepare Submission
-Add description...
+
+Your submission must be a single ZIP archive with the following structure:
+- Compressed Images
+
+- Segmentations
+
+- SWCs
 
 ## Score Submission
 Add description...
