@@ -12,7 +12,7 @@ Add description...
 ## Prepare Submission
 
 Your submission must be a single ZIP archive with the following structure:
-- **Compressed Images**
+- **Compressed Images**:
   - Format: `.zarr`
   - Filename: `{block_id}.zarr`
  
