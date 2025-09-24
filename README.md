@@ -11,7 +11,7 @@ Add description...
 
 ## Prepare Submission
 
-After running your compression algorithm on the test image blocks: [block_005](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_005/), [block_006](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_006/), [block_007](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_007/), [block_008](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_008/), [block_009](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_009/); submit your results in a single ZIP archive with the following structure:
+After running your image compression algorithm on the test dataset: [block_005](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_005/), [block_006](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_006/), [block_007](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_007/), [block_008](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_008/), [block_009](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_009/); submit your results in a single ZIP archive with the following structure:
 
 - **Compressed Images**
   - Format: Any
