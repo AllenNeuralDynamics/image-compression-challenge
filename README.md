@@ -32,7 +32,9 @@ Your submission must be a single ZIP archive with the following structure:
 <blockquote>
   submission.zip
   ├── block_005.zarr
+  
   ├── segmentation_005.tiff
+  
   ├── skeletons_005.zip
   ├── ...
   ├── block_009.zarr
