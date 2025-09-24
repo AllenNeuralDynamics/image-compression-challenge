@@ -11,6 +11,9 @@ Add description...
 
 ## Prepare Submission
 
+After running your compression algorithm on the following image blocks: [block_004](s3://aind-benchmark-data/3d-image-compression/blocks/block_004/input.zarr/), follow these instructions to submit your results.
+
+=
 Your submission must be a single ZIP archive with the following structure:
 - **Compressed Images**
   - Format: Any
