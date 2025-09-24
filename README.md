@@ -50,4 +50,4 @@ pip install -e .
 ```
 
 ## License
-supervoxel-loss is licensed under the MIT License.
+image-compression-challenge is licensed under the MIT License.
