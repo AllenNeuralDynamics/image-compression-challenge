@@ -31,7 +31,6 @@ Your submission must be a single ZIP archive with the following structure:
 **Example of Submission Layout**
 ```bash
 submission.zip
-├── test_blocks.txt
 ├── block_005.zarr
 ├── segmentation_005.tiff
 ├── skeletons_005.zip
