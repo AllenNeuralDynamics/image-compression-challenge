@@ -25,6 +25,7 @@ Your submission must be a single ZIP archive with the following structure:
 - **SWCs**
   - Format: `.zip`
   - Filename: `{block_id}.zip`
+  - Must be generated from the segmentations by following the final step in the “Predict” section of the repository’s README.
 
 ## Score Submission
 Add description...
