@@ -14,18 +14,32 @@ Add description...
 Your submission must be a single ZIP archive with the following structure:
 - **Compressed Images**
   - Format: `.zarr`
-  - Filename: `{block_id}.zarr`
+  - Filename: `block_{block_id}.zarr`
  
 - **Segmentations**
   - Format: `.tiff`
-  - Filename: `{block_id}.tiff`
+  - Filename: `segmentation_{block_id}.tiff`
   - Must be generated using the provided segmentation model that can be downloaded [insert link]().
   - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to generate segmentations. Follow the steps in the “Predict” section of its README to run the model.
 
 - **SWCs**
   - Format: `.zip`
-  - Filename: `{block_id}.zip`
+  - Filename: `skeletons_{block_id}.zip`
   - Must be generated from the segmentations by following the final step in the “Predict” section of the repository’s README.
+
+
+**Example of Submission Layout**
+```bash
+submission.zip
+├── test_blocks.txt
+├── block_005.zarr
+├── segmentation_005.tiff
+├── skeletons_005.zip
+├── ...
+├── block_009.zarr
+├── segmentation_009.tiff
+└── skeletons_009.zip
+```
 
 ## Score Submission
 Add description...
