@@ -13,8 +13,8 @@ Add description...
 
 Your submission must be a single ZIP archive with the following structure:
 - **Compressed Images**
-  - Format: `.zarr`
-  - Filename: `block_{block_num}.zarr`
+  - Format: Any
+  - Filename: `block_{block_num}.{extension}`
  
 - **Segmentations**
   - Format: `.tiff`
