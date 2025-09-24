@@ -15,12 +15,12 @@ Your submission must be a single ZIP archive with the following structure:
 - **Compressed Images**
   - Format: `.zarr`
   - Filename: `{block_id}.zarr`
-  - Must be generated using the provided segmentation model that can be downloaded (insert link)
-  - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to generate segmentations. Follow the steps in the “Predict” section of its README to run inference and save results.
  
 - **Segmentations**
   - Format: `.tiff`
   - Filename: `{block_id}.tiff`
+  - Must be generated using the provided segmentation model that can be downloaded (insert link)
+  - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to generate segmentations. Follow the steps in the “Predict” section of its README to run inference and save results.
 
 - **SWCs**
   - Format: `.zip`
