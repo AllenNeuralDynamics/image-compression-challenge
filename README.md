@@ -12,17 +12,17 @@ Add description...
 ## Prepare Submission
 
 Your submission must be a single ZIP archive with the following structure:
-- **Compressed Images**:
+- **Compressed Images**
   - Format: `.zarr`
   - Filename: `{block_id}.zarr`
  
 - **Segmentations**
-  - Format: '.tiff'
-  - Filename: '{block_id}.tiff'
+  - Format: `.tiff`
+  - Filename: `{block_id}.tiff`
 
 - **SWCs**
-  - Format: '.zip'
-  - Filename: '{block_id}.zip'
+  - Format: `.zip`
+  - Filename: `{block_id}.zip`
 
 ## Score Submission
 Add description...
