@@ -15,11 +15,11 @@ After running your image compression algorithm on the test dataset: [block_005](
 
 - **Compressed Images**
   - Format: Any
-  - Filename: `block_{block_num}.{extension}`
+  - Filename: `block_{num}.{extension}`
  
 - **Segmentations**
   - Format: `.tiff`
-  - Filename: `segmentation_{block_num}.tiff`
+  - Filename: `segmentation_{num}.tiff`
   - Generate segmentations using the provided model ([download here](insert link)).  
   - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to compute affinity maps, and convert them to segmentations following the *Predict* section of the README with default `inference.predict` parameters.
 
