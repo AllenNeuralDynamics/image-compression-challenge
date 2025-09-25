@@ -25,7 +25,7 @@ After running your image compression algorithm on the test dataset: [block_005](
 
 - **SWCs**
   - Format: `.zip`
-  - Filename: `skeletons_{block_num}.zip`
+  - Filename: `skeletons_{num}.zip`
   - Must be generated from the segmentations by following the final step in the “Predict” section of the repository’s README.
 
 
