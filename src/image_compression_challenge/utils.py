@@ -8,9 +8,8 @@ Miscellaneous helper routines.
 
 """
 
-import io
 import os
-import tifffile
+import shutil
 import zipfile
 
 
@@ -63,9 +62,10 @@ def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
     """
     with zipfile.ZipFile(outer_zip_path, 'r') as outer_zip:
         # Find file path
-        matches = [f for f in outer_zip.namelist() if f.endswith(inner_zip_name)]
+        name_list = outer_zip.namelist()
+        matches = [f for f in name_list if f.endswith(inner_zip_name)]
         if not matches:
-            raise FileNotFoundError(f"{self.inner_tiff} not found in ZIP")
+            raise FileNotFoundError(f"{inner_zip_name} not found in ZIP")
         filename = matches[0]
 
         # Move file
