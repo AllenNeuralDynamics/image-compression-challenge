@@ -11,7 +11,7 @@ Code that scores submissions to the image compression data challenge.
 from segmentation_skeleton_metrics.skeleton_metric import SkeletonMetric
 from segmentation_skeleton_metrics.utils.img_util import TiffReader
 
-import os
+import numpy as np
 import shutil
 
 from image_compression_challenge import utils
@@ -35,13 +35,16 @@ def check_required_submission_files(zip_path):
     Checks if a participant's submission contains the required image,
     segmentation, and SWC files.
     """
-    for n in range(5, 6):
-        #img_filename = f"block_00{n}"
-        segmentation_filename = f"segmentation_00{n}.tiff"
-        skeletons_filename = f"skeletons_00{n}.zip"
-        #assert utils.is_file_in_zip(zip_path, img_filename)
-        assert utils.is_file_in_zip(zip_path, segmentation_filename)
-        assert utils.is_file_in_zip(zip_path, skeletons_filename)
+    # Subroutines
+    def check_file(filename):
+        err_msg = f"{filename} is missing from submitted ZIP archive!"
+        assert utils.is_file_in_zip(zip_path, filename), err_msg
+
+    # Main
+    for n in range(5, 10):
+        #check_file(f"block_00{n}")
+        check_file(f"segmentation_00{n}.tiff")
+        check_file(f"skeletons_00{n}.zip")
     print("Pass [1/2]: Submission contains required files!")
 
 
@@ -50,27 +53,22 @@ def check_segmentation_consistency(zip_path):
     move_skeleton_zips(zip_path)
 
     # Evaluation
-    for n in range(5, 6):
-        block_num = f"00{n}"
+    for n in range(5, 10):
         compute_segmentation_metrics(zip_path, n)
 
-    utils.rmdir("./temp")
+    #utils.rmdir("./temp")
     print("Pass [2/2]: Submission has consistent segmentation!")
 
 
 def compute_segmentation_metrics(zip_path, n):
     # Paths
     gt_path = f"s3://aind-benchmark-data/3d-image-compression/swcs/block_00{n}/"
-    segmentation_filename = f"submission/segmentation_00{n}.tiff"
+    segmentation_filename = f"segmentation_00{n}.tiff"
     skeletons_path = f"./temp/skeletons_00{n}.zip"
-    output_dir = "./temp"
+    output_dir = f"./temp/block_00{n}"
 
     # Read segmentation
-    segmentation = TiffReader(
-        zip_path,
-        inner_tiff=segmentation_filename,
-        swap_axes=False
-    )
+    segmentation = TiffReader(zip_path, inner_tiff=segmentation_filename)
 
     # Run evaluation
     skeleton_metric = SkeletonMetric(
@@ -96,7 +94,7 @@ def move_skeleton_zips(zip_path):
     utils.mkdir(output_dir)
 
     # Iterate over skeletons
-    for n in range(5, 6):
+    for n in range(5, 10):
         source_filename = f"skeletons_00{n}.zip"
         destination_path = f"{output_dir}/skeletons_00{n}.zip"
         utils.move_zip_in_zip(zip_path, source_filename, destination_path)
