@@ -34,7 +34,7 @@ def score(zip_path, read_fn):
 # --- Check Submission ---
 def check_required_submission_files(zip_path):
     """
-    Checks if a participant's submission contains the required image,
+    Checks if a participant's submission contains the required compressed image,
     segmentation, and SWC files.
     """
     # Subroutines
