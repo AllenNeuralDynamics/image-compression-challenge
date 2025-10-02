@@ -28,8 +28,7 @@ def score(zip_path, read_fn):
     # Score submission
     compression_score = compute_compressed_size(zip_path)
     decompression_score = compute_decompression_cost(zip_path, read_fn)
-    score = compression_score + decompression_score
-    return score
+    return compression_score, decompression_score
 
 
 # --- Check Submission ---
@@ -82,7 +81,7 @@ def compute_segmentation_metrics(zip_path, num):
     gt_path = f"s3://aind-benchmark-data/3d-image-compression/swcs/block_{num}/"
     segmentation_filename = f"segmentation_{num}.tiff"
     skeletons_path = f"./temp/skeletons_{num}.zip"
-    output_dir = f"./temp/block_{num}"
+    output_dir = "./temp/block"
 
     # Read segmentation
     segmentation = TiffReader(zip_path, inner_tiff=segmentation_filename)
@@ -96,7 +95,7 @@ def compute_segmentation_metrics(zip_path, num):
         anisotropy=(0.748, 0.748, 1.0),
     )
     skeleton_metric.run()
-    return None  #pd.read_csv("./temp/results.csv")
+    return pd.read_csv("./temp/results.csv")
 
 
 def load_baseline_segmentation_result(num):
