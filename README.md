@@ -32,11 +32,11 @@ After running your image compression algorithm on the test dataset: [block_005](
 **Example of Submission Layout**
 ```text
   submission.zip
-  ├── block_005.zarr
+  ├── compressed_005.zarr
   ├── segmentation_005.tiff
   ├── skeletons_005.zip
   ├── ...
-  ├── block_009.zarr
+  ├── compressed_009.zarr
   ├── segmentation_009.tiff
   └── skeletons_009.zip
 ```
