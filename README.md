@@ -15,7 +15,7 @@ After running your image compression algorithm on the test dataset: [block_005](
 
 - **Compressed Images**
   - Format: Any
-  - Filename: `block_{num}.{extension}`
+  - Filename: `compressed_{num}.{extension}`
  
 - **Segmentations**
   - Format: `.tiff`
