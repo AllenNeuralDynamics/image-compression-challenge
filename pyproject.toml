@@ -17,6 +17,7 @@ readme = "README.md"
 dynamic = ["version"]
 
 dependencies = [
+    'pandas',
     'segmentation-skeleton-metrics @ git+https://github.com/AllenNeuralDynamics/segmentation-skeleton-metrics.git@main'
 ]
 
