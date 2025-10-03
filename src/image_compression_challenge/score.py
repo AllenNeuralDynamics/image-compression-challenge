@@ -10,6 +10,7 @@ Code that scores submissions to the image compression data challenge.
 
 from segmentation_skeleton_metrics.skeleton_metric import SkeletonMetric
 from segmentation_skeleton_metrics.utils.img_util import TiffReader
+from time import time
 
 import numpy as np
 import pandas as pd
@@ -44,7 +45,7 @@ def check_required_submission_files(zip_path):
 
     # Main
     for num in BLOCK_NUMS:
-        #check_file(f"block_{num}")
+        #check_file(f"compressed_{num}")
         check_file(f"segmentation_{num}.tiff")
         check_file(f"skeletons_{num}.zip")
     print("Pass [1/2]: Submission contains required files!")
@@ -72,7 +73,16 @@ def compute_compressed_size(zip_path):
 
 
 def compute_decompression_cost(zip_path, read_fn):
-    return np.inf
+    decompression_cost = list()
+    for num in BLOCK_NUMS:
+        # Find path to compressed image
+        compressed_img_path = find_compressed_path(zip_path, num)
+
+        # Decompress image
+        t0 = time()
+        read_fn(compressed_img_path)
+        decompression_cost.append(time() - t0)
+    return np.mean(decompression_cost)
 
 
 # --- Helpers ---
@@ -98,7 +108,35 @@ def compute_segmentation_metrics(zip_path, num):
     return pd.read_csv("./temp/results.csv")
 
 
+def find_compressed_path(zip_path, num):
+    """
+    Finds the path for the compressed image corresponding to "num".
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submission ZIP archive.
+    num : str
+        Unique identifier for an image block. 
+    """
+    pass
+
+
 def load_baseline_segmentation_result(num):
+    """
+    Loads the skeleton-based metric results for the baseline segmentation for
+    the image block corresponding to "num".
+
+    Parameters
+    ----------
+    num : str
+        Unique identifier for an image block.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Skeleton-based metric results for the baseline segmentation.
+    """
     url = f"https://raw.githubusercontent.com/AllenNeuralDynamics/image-compression-challenge/main/baseline_segmentation_results/results_{num}.csv"
     return pd.read_csv(url)
 
@@ -112,11 +150,11 @@ def move_skeleton_zips(zip_path):
 
     Parameters
     ----------
-    zip : str
+    zip_path : str
         Path to a participant's submission ZIP archive.
     """
     # Initialize temp directory
-    output_dir = "./temp"
+    output_dir = "./temp/"
     utils.mkdir(output_dir)
 
     # Iterate over skeletons
