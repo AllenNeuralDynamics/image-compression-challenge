@@ -70,8 +70,8 @@ def check_segmentation_consistency(zip_path):
     # Evaluation
     for num in BLOCK_NUMS:
         # Load segmentation results
-        baseline_result = load_baseline_segmentation_result(num)
-        submission_result = compute_segmentation_metrics(zip_path, num)
+        result_baseline = load_baseline_segmentation_result(num)
+        result_submission = compute_segmentation_metrics(zip_path, num)
 
         # Compare segmentation results
         for metric in tqdm(ERROR_TOLS, desc="Checking Segmentation"):
