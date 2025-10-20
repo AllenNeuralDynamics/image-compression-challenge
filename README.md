@@ -47,6 +47,7 @@ Add description...
 ```python
 from image_compression_challenge.score import score
 
+
 # Initializations
 submission_zip_path = "path-to-submission-zip"
 read_compressed = "function-to-read-compressed-image"
