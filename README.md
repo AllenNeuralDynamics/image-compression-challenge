@@ -44,6 +44,18 @@ After running your image compression algorithm on the test dataset: [block_005](
 ## Score Submission
 Add description...
 
+```python
+from image_compression_challenge.score import score
+
+# Initializations
+submission_zip_path = "path-to-submission-zip"
+read_compressed = "function-to-read-compressed-image"
+
+# Main
+score(submission_zip_path, read_compressed)
+
+```
+
 ## Installation
 To use the software, in the root directory, run
 ```bash
