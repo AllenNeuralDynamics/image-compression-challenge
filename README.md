@@ -11,17 +11,17 @@ Add description...
 
 ## Prepare Submission
 
-After running your image compression algorithm on the test dataset: [block_005](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_005/), [block_006](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_006/), [block_007](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_007/), [block_008](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_008/), [block_009](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_009/); submit your results in a single ZIP archive with the following structure:
+After running your image compression algorithm on the test dataset: [block_005](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_005/), [block_006](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_006/), [block_007](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_007/), [block_008](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_008/), [block_009](https://open.quiltdata.com/b/aind-benchmark-data/tree/3d-image-compression/blocks/block_009/); submit your results in a single ZIP archive with the following files:
 
 - **Compressed Images**
   - Format: Any
-  - Filename: `block_{num}.{extension}`
+  - Filename: `compressed_{num}.{extension}`
  
 - **Segmentations**
   - Format: `.tiff`
   - Filename: `segmentation_{num}.tiff`
   - Generate segmentations using the provided model ([download here](insert link)).  
-  - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to compute affinity maps, and convert them to segmentations following the *Predict* section of the README with default `inference.predict` parameters.
+  - Use the [aind-exaspim-neuron-segmentation](https://github.com/AllenNeuralDynamics/aind-exaspim-neuron-segmentation) repository to compute affinity maps, and convert them to segmentations by following the *Predict* section of the README with default `inference.predict` parameters.
 
 - **SWCs**
   - Format: `.zip`
@@ -32,11 +32,11 @@ After running your image compression algorithm on the test dataset: [block_005](
 **Example of Submission Layout**
 ```text
   submission.zip
-  ├── block_005.zarr
+  ├── compressed_005.zarr
   ├── segmentation_005.tiff
   ├── skeletons_005.zip
   ├── ...
-  ├── block_009.zarr
+  ├── compressed_009.zarr
   ├── segmentation_009.tiff
   └── skeletons_009.zip
 ```
