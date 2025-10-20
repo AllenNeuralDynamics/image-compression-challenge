@@ -83,7 +83,15 @@ def check_segmentation_consistency(zip_path):
 
 # --- Compute Score ---
 def compute_compressed_size(zip_path):
-    return np.inf
+    compressed_size = list()
+    for num in BLOCK_NUMS:
+        # Find path to compressed image
+        compressed_img_path = find_compressed_path(zip_path, num)
+
+        # Compute compressed size
+        size_gb = os.path.getsize(compressed_img_path) / (1024 ** 3)
+        compressed_size.append(size_gb)
+    return np.mean(compressed_size)
 
 
 def compute_decompression_cost(zip_path, read_fn):
