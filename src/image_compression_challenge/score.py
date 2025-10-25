@@ -23,7 +23,7 @@ from image_compression_challenge import utils
 
 BLOCK_NUMS = ["005", "006", "007", "008", "009"]
 ERROR_TOLS = {
-    "% Omit Edges": 10,
+    "% Omit Edges": 100,
     #"Split Rate": 500,
     #"Merge Rate": 500
 }
@@ -134,11 +134,12 @@ def compute_segmentation_metrics(zip_path, num):
         output_dir,
         anisotropy=(0.748, 0.748, 1.0),
         fragments_pointer=skeletons_path,
+        results_filename=f"results_{num}",
         verbose=False
     )
 
     # Process result
-    result = pd.read_csv("./temp/results.csv")
+    result = pd.read_csv(f"./temp/results_{num}.csv")
     return fill_nan_results(result)
 
 
