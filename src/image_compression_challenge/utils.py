@@ -46,6 +46,40 @@ def rmdir(path):
 
 
 # --- ZIP utils ---
+def find_compressed_path(zip_path, filename):
+    """
+    Finds the path to the specified compressed image.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submission ZIP archive.
+    filename : str
+        Name of compressed file.
+    """
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        for name in [n for n in z.namelist()]:
+            if filename in name and "decompressed" not in name:
+                return name
+    raise Exception(f"Compressed file {filename} not found!")
+
+
+def is_file_in_zip(zip_path, filename):
+    """
+    Checks if the given filename is contained in the ZIP archive.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to ZIP archive to be checked.
+    filename : str
+        Filename to be searched for in ZIP archive.
+    """
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        namelist = [os.path.basename(n) for n in z.namelist()]
+        return filename in namelist
+
+
 def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
     """
     Extracts a nested ZIP file from within a parent ZIP archive and saves it
@@ -72,19 +106,3 @@ def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
         inner_zip_bytes = outer_zip.read(filename)
         with open(output_path, 'wb') as f_out:
             f_out.write(inner_zip_bytes)
-
-
-def is_file_in_zip(zip_path, filename):
-    """
-    Checks if the given filename is contained in the ZIP archive.
-
-    Parameters
-    ----------
-    zip_path : str
-        Path to ZIP archive to be checked.
-    filename : str
-        Filename to be searched for in ZIP archive.
-    """
-    with zipfile.ZipFile(zip_path, 'r') as z:
-        namelist = [os.path.basename(n) for n in z.namelist()]
-        return filename in namelist

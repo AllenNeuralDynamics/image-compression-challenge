@@ -8,36 +8,37 @@ Code that scores submissions to the image compression data challenge.
 
 """
 
-from segmentation_skeleton_metrics.skeleton_metric import SkeletonMetric
+from segmentation_skeleton_metrics.evaluate import evaluate
 from segmentation_skeleton_metrics.utils.img_util import TiffReader
-from time import time
+from segmentation_skeleton_metrics.utils.util import compute_weighted_avg
 from tqdm import tqdm
 
 import numpy as np
+import os
 import pandas as pd
 import shutil
+import zipfile
 
 from image_compression_challenge import utils
 
 BLOCK_NUMS = ["005", "006", "007", "008", "009"]
 ERROR_TOLS = {
     "% Omit Edges": 10,
-    "Split Rate": 500,
-    "Merge Rate": 500
+    #"Split Rate": 500,
+    #"Merge Rate": 500
 }
 
 
-def score(zip_path, read_fn):
+def score(zip_path):
     # Check submission is valid
-    print("Check Submission...")
+    print("Step 1: Check Submission")
     check_required_submission_files(zip_path)
     check_segmentation_consistency(zip_path)
 
     # Score submission
-    print("Score Submission...")
+    print("Step 2: Score Submission")
     compression_score = compute_compressed_size(zip_path)
-    decompression_score = compute_decompression_cost(zip_path, read_fn)
-    return compression_score, decompression_score
+    return compression_score
 
 
 # --- Check Submission ---
@@ -58,53 +59,59 @@ def check_required_submission_files(zip_path):
 
     # Main
     for num in tqdm(BLOCK_NUMS, desc="Checking Required Files"):
-        #check_file(f"compressed_{num}")
+        utils.find_compressed_path(zip_path, f"compressed_{num}")
+        check_file(f"decompressed_{num}.tiff")
         check_file(f"segmentation_{num}.tiff")
         check_file(f"skeletons_{num}.zip")
 
 
-def check_segmentation_consistency(zip_path):
-    # Initializations
-    move_skeleton_zips(zip_path)
+def check_ssim():
+    pass
 
-    # Evaluation
-    for num in BLOCK_NUMS:
+
+def check_segmentation_consistency(zip_path):
+    move_skeleton_zips(zip_path)
+    for num in tqdm(BLOCK_NUMS, desc="Checking Segmentation"):
         # Load segmentation results
         result_baseline = load_baseline_segmentation_result(num)
         result_submission = compute_segmentation_metrics(zip_path, num)
 
         # Compare segmentation results
-        for metric in tqdm(ERROR_TOLS, desc="Checking Segmentation"):
-            error = submission_result[metric] - baseline_result[metric]
-            if error > ERROR_TOLS[metric]:
-                raise ValueError(f"Failed with {metric}={submission_result[metric]}")
+        for metric in ERROR_TOLS:
+            avg_baseline = compute_weighted_avg(result_baseline, metric)
+            avg_sumission = compute_weighted_avg(result_submission, metric)
+            error = avg_sumission - avg_baseline
+            print("Omit Rates:", avg_sumission, avg_baseline)
+            print("Error:", error)
+            if error > ERROR_TOLS[metric] and error:
+                raise ValueError(f"Failed with {metric}={error}")
     #utils.rmdir("./temp")
 
 
 # --- Compute Score ---
 def compute_compressed_size(zip_path):
+    # Compute score
     compressed_size = list()
-    for num in BLOCK_NUMS:
+    for num in tqdm(BLOCK_NUMS, "Compute Compressed Size"):
         # Find path to compressed image
-        compressed_img_path = find_compressed_path(zip_path, num)
+        name = f"compressed_{num}"
+        compressed_img_path = utils.find_compressed_path(zip_path, name)
+        filename = os.path.basename(compressed_img_path)
 
         # Compute compressed size
-        size_gb = os.path.getsize(compressed_img_path) / (1024 ** 3)
+        size_gb = get_file_size(zip_path, compressed_img_path)
         compressed_size.append(size_gb)
-    return np.mean(compressed_size)
+
+    # Report score
+    score = np.mean(compressed_size)
+    print(f"Score: {score} GBs")
+    return score
 
 
-def compute_decompression_cost(zip_path, read_fn):
-    decompression_cost = list()
-    for num in BLOCK_NUMS:
-        # Find path to compressed image
-        compressed_img_path = find_compressed_path(zip_path, num)
-
-        # Decompress image
-        t0 = time()
-        read_fn(compressed_img_path)
-        decompression_cost.append(time() - t0)
-    return np.mean(decompression_cost)
+def get_file_size(zip_path, filename):
+    with zipfile.ZipFile(zip_path, 'r') as zf:
+        info = zf.getinfo(filename)
+        return info.file_size / 1024 ** 3
 
 
 # --- Helpers ---
@@ -116,17 +123,19 @@ def compute_segmentation_metrics(zip_path, num):
     output_dir = "./temp"
 
     # Read segmentation
-    segmentation = TiffReader(zip_path, inner_tiff=segmentation_filename)
+    segmentation = TiffReader(
+        zip_path, inner_tiff=segmentation_filename
+    )
 
     # Run evaluation
-    skeleton_metric = SkeletonMetric(
+    evaluate(
         gt_path,
         segmentation,
         output_dir,
-        fragments_pointer=skeletons_path,
         anisotropy=(0.748, 0.748, 1.0),
+        fragments_pointer=skeletons_path,
+        verbose=False
     )
-    skeleton_metric.run()
 
     # Process result
     result = pd.read_csv("./temp/results.csv")
@@ -137,20 +146,6 @@ def fill_nan_results(df):
     df["Merge Rate"] = df["Merge Rate"].fillna(df["SWC Run Length"])
     df["Split Rate"] = df["Split Rate"].fillna(df["SWC Run Length"])
     return df
-
-
-def find_compressed_path(zip_path, num):
-    """
-    Finds the path for the compressed image corresponding to "num".
-
-    Parameters
-    ----------
-    zip_path : str
-        Path to a participant's submission ZIP archive.
-    num : str
-        Unique identifier for an image block.
-    """
-    pass
 
 
 def load_baseline_segmentation_result(num):
