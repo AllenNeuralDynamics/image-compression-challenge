@@ -16,7 +16,12 @@ After running your image compression algorithm on the test dataset: [block_005](
 - **Compressed Images**
   - Format: Any
   - Filename: `compressed_{num}.{extension}`
- 
+
+- **Decompressed Images**
+  - Format: `.tiff`
+  - Filename: `decompressed_{num}.tiff`
+  - Save your compressed images as a TIFF
+
 - **Segmentations**
   - Format: `.tiff`
   - Filename: `segmentation_{num}.tiff`
@@ -33,10 +38,12 @@ After running your image compression algorithm on the test dataset: [block_005](
 ```text
   submission.zip
   ├── compressed_005.zarr
+  ├── decompressed_005.tiff
   ├── segmentation_005.tiff
   ├── skeletons_005.zip
   ├── ...
   ├── compressed_009.zarr
+  ├── decompressed_009.tiff
   ├── segmentation_009.tiff
   └── skeletons_009.zip
 ```
