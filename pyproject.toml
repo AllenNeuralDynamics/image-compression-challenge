@@ -18,7 +18,11 @@ dynamic = ["version"]
 
 dependencies = [
     'pandas',
-    'segmentation-skeleton-metrics @ git+https://github.com/AllenNeuralDynamics/segmentation-skeleton-metrics.git@main'
+    's3fs==2024.12.0',
+    'scipy',
+    'segmentation-skeleton-metrics @ git+https://github.com/AllenNeuralDynamics/segmentation-skeleton-metrics.git@main',
+    'tifffile',
+    'zarr'
 ]
 
 [dependency-groups]

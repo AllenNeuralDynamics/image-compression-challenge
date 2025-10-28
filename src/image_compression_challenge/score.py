@@ -11,32 +11,32 @@ Code that scores submissions to the image compression data challenge.
 from segmentation_skeleton_metrics.evaluate import evaluate
 from segmentation_skeleton_metrics.utils.img_util import TiffReader
 from segmentation_skeleton_metrics.utils.util import compute_weighted_avg
+from time import time
 from tqdm import tqdm
 
 import numpy as np
-import os
 import pandas as pd
-import shutil
 import zipfile
 
 from image_compression_challenge import utils
 
 BLOCK_NUMS = ["005", "006", "007", "008", "009"]
 ERROR_TOLS = {
-    "% Omit Edges": 100,
-    #"Split Rate": 500,
-    #"Merge Rate": 500
+    "% Omit Edges": 10,
+    "Split Rate": 1000,
+    "Merge Rate": 1000
 }
 
 
 def score(zip_path):
     # Check submission is valid
-    print("Step 1: Check Submission")
+    print("\nStep 1: Check Submission")
     check_required_submission_files(zip_path)
-    check_segmentation_consistency(zip_path)
+    check_ssim(zip_path)
+    #check_segmentation_consistency(zip_path)
 
     # Score submission
-    print("Step 2: Score Submission")
+    print("\nStep 2: Score Submission")
     compression_score = compute_compressed_size(zip_path)
     return compression_score
 
@@ -50,7 +50,7 @@ def check_required_submission_files(zip_path):
     Parameters
     ----------
     zip_path : str
-        Path to a participant's submission ZIP archive.
+        Path to a participant's submitted ZIP archive.
     """
     # Subroutines
     def check_file(filename):
@@ -65,8 +65,26 @@ def check_required_submission_files(zip_path):
         check_file(f"skeletons_{num}.zip")
 
 
-def check_ssim():
-    pass
+def check_ssim(zip_path):
+    # Load original images
+    img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
+
+    # Check metric
+    for num in tqdm(BLOCK_NUMS, desc="Checking SSIM"):
+        # Set paths
+        decompressed_filename = f"decompressed_{num}.tiff"
+        original_path = f"{img_root}/block_{num}/input.zarr/0"
+
+        # Read images
+        decompressed = utils.read_zipped_tiff(zip_path, decompressed_filename)
+        original = utils.read_zarr(original_path)[:]
+
+        # Compute metric
+        t0 = time()
+        ssim = utils.compute_ssim(decompressed[0, 0], original[0, 0])
+        print("runtime:", time() - t0)
+        print("ssim:", ssim)
+        assert ssim > 0.7, f"Failed with SSIM={ssim} on block {num}"
 
 
 def check_segmentation_consistency(zip_path):
@@ -81,22 +99,33 @@ def check_segmentation_consistency(zip_path):
             avg_baseline = compute_weighted_avg(result_baseline, metric)
             avg_sumission = compute_weighted_avg(result_submission, metric)
             error = avg_sumission - avg_baseline
-            print("Omit Rates:", avg_sumission, avg_baseline)
-            print("Error:", error)
             if error > ERROR_TOLS[metric] and error:
                 raise ValueError(f"Failed with {metric}={error}")
-    #utils.rmdir("./temp")
+    utils.rmdir("./temp")
 
 
 # --- Compute Score ---
 def compute_compressed_size(zip_path):
+    """
+    Compute the average compressed file size (in GBs) across all blocks in a
+    ZIP archive.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+
+    Returns
+    -------
+    score : float
+        Average compressed file size (in GBs) across all blocks.
+    """
     # Compute score
     compressed_size = list()
     for num in tqdm(BLOCK_NUMS, "Compute Compressed Size"):
         # Find path to compressed image
         name = f"compressed_{num}"
         compressed_img_path = utils.find_compressed_path(zip_path, name)
-        filename = os.path.basename(compressed_img_path)
 
         # Compute compressed size
         size_gb = get_file_size(zip_path, compressed_img_path)
@@ -109,6 +138,17 @@ def compute_compressed_size(zip_path):
 
 
 def get_file_size(zip_path, filename):
+    """
+    Gets the size (in GBs) of the given file contained in the provided
+    zip.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+    filename : str
+        Name of file to be checked.
+    """
     with zipfile.ZipFile(zip_path, 'r') as zf:
         info = zf.getinfo(filename)
         return info.file_size / 1024 ** 3
@@ -134,12 +174,11 @@ def compute_segmentation_metrics(zip_path, num):
         output_dir,
         anisotropy=(0.748, 0.748, 1.0),
         fragments_pointer=skeletons_path,
-        results_filename=f"results_{num}",
         verbose=False
     )
 
     # Process result
-    result = pd.read_csv(f"./temp/results_{num}.csv")
+    result = pd.read_csv("./temp/results.csv")
     return fill_nan_results(result)
 
 
@@ -179,7 +218,7 @@ def move_skeleton_zips(zip_path):
     Parameters
     ----------
     zip_path : str
-        Path to a participant's submission ZIP archive.
+        Path to a participant's submitted ZIP archive.
     """
     # Initialize temp directory
     output_dir = "./temp/"
