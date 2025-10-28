@@ -8,8 +8,17 @@ Miscellaneous helper routines.
 
 """
 
+from scipy.ndimage import uniform_filter
+from skimage.metrics import structural_similarity as ssim
+from tqdm import tqdm
+
+import numpy as np
+import io
 import os
+import s3fs
 import shutil
+import tifffile
+import zarr
 import zipfile
 
 
@@ -64,6 +73,24 @@ def find_compressed_path(zip_path, filename):
     raise Exception(f"Compressed file {filename} not found!")
 
 
+def find_decompressed_path(zip_path, filename):
+    """
+    Finds the path to the specified decompressed image.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submission ZIP archive.
+    filename : str
+        Name of compressed file.
+    """
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        for name in [n for n in z.namelist()]:
+            if filename in name:
+                return name
+    raise Exception(f"Decompressed file {filename} not found!")
+
+
 def is_file_in_zip(zip_path, filename):
     """
     Checks if the given filename is contained in the ZIP archive.
@@ -106,3 +133,77 @@ def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
         inner_zip_bytes = outer_zip.read(filename)
         with open(output_path, 'wb') as f_out:
             f_out.write(inner_zip_bytes)
+
+
+# --- Miscellaneous ---
+def compute_ssim(img1, img2, axis=0, win_size=7, data_range=None):
+    # Initializations
+    assert img1.shape == img2.shape, "Images must have the same shape"
+    data_range = max(img1.max(), img2.max()) - min(img1.min(), img2.min())
+
+    # Main
+    ssim_values = []
+    for i in range(img1.shape[0]):
+        val = ssim(
+            img1[i, ...],
+            img2[i, ...],
+            data_range=data_range,
+            win_size=win_size
+        )
+        ssim_values.append(val)
+    return np.mean(ssim_values)
+
+
+def read_zarr(img_path):
+    """
+    Reads a Zarr volume from S3.
+
+    Parameters
+    ----------
+    img_path : str
+        Path to Zarr directory.
+
+    Returns
+    -------
+    img : zarr.ndarray
+        Image volume.
+    """
+    store = s3fs.S3Map(root=img_path, s3=s3fs.S3FileSystem(anon=True))
+    img = zarr.open(store, mode="r")
+    return img
+
+
+def read_zipped_tiff(zip_path, filename):
+    """
+    Reads an TIFF file contained within a ZIP archive.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+    filename : str
+        Name of image to be read.
+
+    Returns
+    -------
+    img : numpy.ndarray
+        Image volume.
+    """
+    with zipfile.ZipFile(zip_path, "r") as z:
+        # Collect only valid TIFF files, ignoring __MACOSX junk
+        tiff_files = [
+            f for f in z.namelist()
+            if f.lower().endswith((".tif", ".tiff"))
+            and not os.path.basename(f).startswith("._")
+        ]
+
+        # Choose file
+        matches = [f for f in tiff_files if f.endswith(filename)]
+        if not matches:
+            raise FileNotFoundError(f"{filename} not found in ZIP")
+        filename = matches[0]
+
+        # Load TIFF
+        with z.open(filename) as f:
+            img = tifffile.imread(io.BytesIO(f.read()))
+        return img
