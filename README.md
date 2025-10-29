@@ -64,7 +64,7 @@ score(submission_zip_path)
 ```
 
 <p>
-  <img src="imgs/printouts.png" width="850" alt="pipeline">
+  <img src="imgs/printouts.png" width="600" alt="pipeline">
   <br>
   <b> Figure: </b>Printouts from score routine.
 </p>
