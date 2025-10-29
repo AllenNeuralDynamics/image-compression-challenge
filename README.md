@@ -63,11 +63,6 @@ score(submission_zip_path)
 
 ```
 
-<p>
-  <img src="imgs/printouts.png" width="600" alt="pipeline">
-  <br>
-  <b> Figure: </b>Printouts from score routine.
-</p>
 
 ## Installation
 To use the software, in the root directory, run
