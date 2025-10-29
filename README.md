@@ -57,12 +57,17 @@ from image_compression_challenge.score import score
 
 # Initializations
 submission_zip_path = "path-to-submission-zip"
-read_compressed = "function-to-read-compressed-image"
 
 # Main
-score(submission_zip_path, read_compressed)
+score(submission_zip_path)
 
 ```
+
+<p>
+  <img src="imgs/printouts.png" width="850" alt="pipeline">
+  <br>
+  <b> Figure: </b>Printouts from score routine.
+</p>
 
 ## Installation
 To use the software, in the root directory, run
