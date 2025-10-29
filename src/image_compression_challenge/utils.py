@@ -8,9 +8,7 @@ Miscellaneous helper routines.
 
 """
 
-from scipy.ndimage import uniform_filter
 from skimage.metrics import structural_similarity as ssim
-from tqdm import tqdm
 
 import numpy as np
 import io
@@ -136,7 +134,27 @@ def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
 
 
 # --- Miscellaneous ---
-def compute_ssim(img1, img2, axis=0, win_size=7, data_range=None):
+def compute_ssim(img1, img2, axis=0, win_size=7):
+    """
+    Computes the structural similarity (SSIM) between two 3D images by
+    averaging the SSIM between 2D slices.
+
+    Parameters
+    ----------
+    img1 : numpy.ndarray
+        Image to be evaluated.
+    img2 ; numpy.ndarray
+        Image to be evaluated.
+    axis : int, optional
+        Axis to compute SSIM along. Default is 0.
+    win_size : int, optional
+        Size of convolutional kernel used to compute SSIM.
+
+    Returns
+    -------
+    ssim : float
+        Structural similarity between the two given images.
+    """
     # Initializations
     assert img1.shape == img2.shape, "Images must have the same shape"
     data_range = max(img1.max(), img2.max()) - min(img1.min(), img2.min())
@@ -170,7 +188,7 @@ def read_zarr(img_path):
     """
     store = s3fs.S3Map(root=img_path, s3=s3fs.S3FileSystem(anon=True))
     img = zarr.open(store, mode="r")
-    return img
+    return img[:]
 
 
 def read_zipped_tiff(zip_path, filename):

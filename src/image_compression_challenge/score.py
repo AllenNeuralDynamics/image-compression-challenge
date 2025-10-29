@@ -8,10 +8,10 @@ Code that scores submissions to the image compression data challenge.
 
 """
 
+from concurrent.futures import as_completed, ProcessPoolExecutor
 from segmentation_skeleton_metrics.evaluate import evaluate
 from segmentation_skeleton_metrics.utils.img_util import TiffReader
 from segmentation_skeleton_metrics.utils.util import compute_weighted_avg
-from time import time
 from tqdm import tqdm
 
 import numpy as np
@@ -29,11 +29,20 @@ ERROR_TOLS = {
 
 
 def score(zip_path):
+    """
+    Evaluates a compressed submission file by validating its contents and
+    computing its compression score.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+    """
     # Check submission is valid
     print("\nStep 1: Check Submission")
     check_required_submission_files(zip_path)
     check_ssim(zip_path)
-    #check_segmentation_consistency(zip_path)
+    check_segmentation_consistency(zip_path)
 
     # Score submission
     print("\nStep 2: Score Submission")
@@ -54,6 +63,14 @@ def check_required_submission_files(zip_path):
     """
     # Subroutines
     def check_file(filename):
+        """
+        Checks that file is contained in the submitted ZIP archive.
+
+        Parameters
+        ----------
+        filename : str
+            Name of file to be checked.
+        """
         err_msg = f"{filename} is missing from submitted ZIP archive!"
         assert utils.is_file_in_zip(zip_path, filename), err_msg
 
@@ -66,28 +83,79 @@ def check_required_submission_files(zip_path):
 
 
 def check_ssim(zip_path):
-    # Load original images
+    """
+    Checks the decompressed image quality for all benchmark blocks by
+    computing the Structural Similarity Index (SSIM) between decompressed
+    and original data.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+    """
     img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
+    with ProcessPoolExecutor() as executor:
+        # Assign processes
+        pending = dict()
+        for num in BLOCK_NUMS:
+            # Set paths
+            decompressed_filename = f"decompressed_{num}.tiff"
+            original_path = f"{img_root}/block_{num}/input.zarr/0"
 
-    # Check metric
-    for num in tqdm(BLOCK_NUMS, desc="Checking SSIM"):
-        # Set paths
-        decompressed_filename = f"decompressed_{num}.tiff"
-        original_path = f"{img_root}/block_{num}/input.zarr/0"
+            # Submit thread
+            thread = executor.submit(
+                _compute_ssim, original_path, zip_path, decompressed_filename
+            )
+            pending[thread] = num
 
-        # Read images
-        decompressed = utils.read_zipped_tiff(zip_path, decompressed_filename)
-        original = utils.read_zarr(original_path)[:]
+        # Process results
+        pbar = tqdm(total=len(BLOCK_NUMS), desc="Checking SSIM")
+        for thread in as_completed(pending.keys()):
+            num = pending.pop(thread)
+            ssim = thread.result()
+            assert ssim > 0.7, f"Failed with SSIM={ssim} on block {num}"
+            pbar.update(1)
 
-        # Compute metric
-        t0 = time()
-        ssim = utils.compute_ssim(decompressed[0, 0], original[0, 0])
-        print("runtime:", time() - t0)
-        print("ssim:", ssim)
-        assert ssim > 0.7, f"Failed with SSIM={ssim} on block {num}"
+
+def _compute_ssim(original_path, zip_path, decompressed_filename):
+    """
+    Computes the Structural Similarity Index (SSIM) between an image and its
+    decompressed counterpart stored in a ZIP archive.
+
+    Parameters
+    ----------
+    original_path : str
+        Path to the original Zarr dataset containing the reference image.
+    zip_path : str
+        Path to the ZIP archive containing the decompressed TIFF image.
+    decompressed_filename : str
+        Name of the TIFF file within the ZIP archive to be compared.
+
+    Returns
+    -------
+    ssim : float
+        Computed SSIM value between the decompressed and original images,
+        where values close to 1 indicate high similarity.
+    """
+    # Read images
+    decompressed = utils.read_zipped_tiff(zip_path, decompressed_filename)
+    original = utils.read_zarr(original_path)
+
+    # Compute metric
+    ssim = utils.compute_ssim(decompressed[0, 0], original[0, 0])
+    return ssim
 
 
 def check_segmentation_consistency(zip_path):
+    """
+    Checks segmentation results against baseline metrics to ensure
+    consistency.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+    """
     move_skeleton_zips(zip_path)
     for num in tqdm(BLOCK_NUMS, desc="Checking Segmentation"):
         # Load segmentation results
@@ -107,7 +175,7 @@ def check_segmentation_consistency(zip_path):
 # --- Compute Score ---
 def compute_compressed_size(zip_path):
     """
-    Compute the average compressed file size (in GBs) across all blocks in a
+    Computes the average compressed file size (in GBs) across all blocks in a
     ZIP archive.
 
     Parameters
@@ -148,6 +216,11 @@ def get_file_size(zip_path, filename):
         Path to a participant's submitted ZIP archive.
     filename : str
         Name of file to be checked.
+
+    Returns
+    -------
+    float
+        Size of the given file.
     """
     with zipfile.ZipFile(zip_path, 'r') as zf:
         info = zf.getinfo(filename)
@@ -156,6 +229,21 @@ def get_file_size(zip_path, filename):
 
 # --- Helpers ---
 def compute_segmentation_metrics(zip_path, num):
+    """
+    Computes skeleton-based segmentation metrics for a given image.
+
+    Parameters
+    ----------
+    zip_path : str
+        Path to a participant's submitted ZIP archive.
+    num : str
+        Unique identifier for an image block.
+
+    Returns
+    -------
+    results : pandas.DataFrame
+        Data frame containing skeleton metric results.
+    """
     # Paths
     gt_path = f"s3://aind-benchmark-data/3d-image-compression/swcs/block_{num}/"
     segmentation_filename = f"segmentation_{num}.tiff"
@@ -178,11 +266,30 @@ def compute_segmentation_metrics(zip_path, num):
     )
 
     # Process result
-    result = pd.read_csv("./temp/results.csv")
-    return fill_nan_results(result)
+    results = pd.read_csv("./temp/results.csv")
+    return fill_nan_results(results)
 
 
 def fill_nan_results(df):
+    """
+    Replaces NaN values in 'Merge Rate' and 'Split Rate' columns with values
+    from 'SWC Run Length'.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data frame containing skeleton metric results on the baseline
+        segmentation.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Data frame containing skeleton metric results with NaN values
+        replaced.
+    """
+    # Approximate actual run length
+
+    # Fill NaNs
     df["Merge Rate"] = df["Merge Rate"].fillna(df["SWC Run Length"])
     df["Split Rate"] = df["Split Rate"].fillna(df["SWC Run Length"])
     return df
