@@ -17,7 +17,7 @@ This repository contains the scoring code for a Kaggle challenge to develop adva
 2. Score Submission  
    - Calculate the average file size of the compressed image  
 
-A submission must successfully pass all three validation checks in Step 1 to proceed to being scored in Step 2. Submissions that fail any validation check are considered invalid and will not receive a score. This pipeline has been implemented in the following [GitHub Repository](https://github.com/AllenNeuralDynamics/image-compression-challenge).
+A submission must successfully pass all three validation checks in Step 1 to proceed to being scored in Step 2. Submissions that fail any validation check are considered invalid and will not receive a score.
 
 ## Prepare Submission
 
