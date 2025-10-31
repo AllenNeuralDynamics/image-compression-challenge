@@ -7,7 +7,7 @@
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![Python](https://img.shields.io/badge/python->=3.10-blue?logo=python)
 
-Add description...
+This repository contains the scoring code for a Kaggle challenge to develop advanced image compression methods for massive 3D mouse brain datasets acquired with a custom light sheet microscope.
 
 ## Prepare Submission
 
