@@ -7,7 +7,18 @@
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![Python](https://img.shields.io/badge/python->=3.10-blue?logo=python)
 
-This repository contains the scoring code for a Kaggle challenge to develop advanced image compression methods for massive 3D mouse brain datasets acquired with a custom light sheet microscope.
+This repository contains the scoring code for a Kaggle challenge to develop advanced image compression methods for massive 3D mouse brain datasets acquired with a custom light sheet microscope. Our evaluation pipeline consists of two stages:
+
+1. Validate Submission  
+   - Check submission contains required files  
+   - Compute Structural Similarity (SSIM) between original and compressed image  
+   - Evaluate segmentation generated from compressed image  
+&nbsp; 
+
+2. Score Submission  
+   - Calculate the average file size of the compressed image  
+
+A submission must successfully pass all three validation checks in Step 1 to proceed to being scored in Step 2. Submissions that fail any validation check are considered invalid and will not receive a score. This pipeline has been implemented in the following [GitHub Repository](https://github.com/AllenNeuralDynamics/image-compression-challenge).
 
 ## Prepare Submission
 
