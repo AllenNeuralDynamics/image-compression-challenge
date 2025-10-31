@@ -49,7 +49,7 @@ After running your image compression algorithm on the test dataset: [block_005](
 ```
 
 ## Score Submission
-Example of how to call the main scoring routine
+Example of calling the "score" routine
 
 ```python
 from image_compression_challenge.score import score
