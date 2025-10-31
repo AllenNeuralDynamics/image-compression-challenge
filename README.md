@@ -13,7 +13,6 @@ This repository contains the scoring code for a Kaggle challenge to develop adva
    - Check submission contains required files  
    - Compute Structural Similarity (SSIM) between original and compressed image  
    - Evaluate segmentation generated from compressed image  
-&nbsp; 
 
 2. Score Submission  
    - Calculate the average file size of the compressed image  
