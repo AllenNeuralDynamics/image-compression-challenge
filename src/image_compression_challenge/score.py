@@ -20,7 +20,8 @@ import zipfile
 
 from image_compression_challenge import utils
 
-BLOCK_NUMS = ["005", "006", "007", "008", "009"]
+VALIDATE_NUMS = ["000", "001", "002", "003", "004"]
+TEST_NUMS = ["005", "006", "007", "008", "009"]
 ERROR_TOLS = {
     "% Omit Edges": 10,
     "Split Rate": 1000,
@@ -28,7 +29,7 @@ ERROR_TOLS = {
 }
 
 
-def score(zip_path):
+def score(zip_path, use_test_blocks=True):
     """
     Evaluates a compressed submission file by validating its contents and
     computing its compression score.
@@ -37,21 +38,27 @@ def score(zip_path):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
+    use_test_blocks : bool, optional
+        Indication of whether to run evaluation using test blocks. Otherwise,
+        the validation blocks are used. Default is True.
     """
+    # Set block IDs
+    block_nums = TEST_NUMS if use_test_blocks else VALIDATE_NUMS
+
     # Check submission is valid
     print("\nStep 1: Check Submission")
-    check_required_submission_files(zip_path)
-    check_ssim(zip_path)
-    check_segmentation_consistency(zip_path)
+    check_required_submission_files(zip_path, block_nums)
+    check_ssim(zip_path, block_nums)
+    check_segmentation_consistency(zip_path, block_nums)
 
     # Score submission
     print("\nStep 2: Score Submission")
-    compression_score = compute_compressed_size(zip_path)
+    compression_score = compute_compressed_size(zip_path, block_nums)
     return compression_score
 
 
 # --- Check Submission ---
-def check_required_submission_files(zip_path):
+def check_required_submission_files(zip_path, block_nums):
     """
     Checks if a participant's submission contains the required compressed
     image, segmentation, and SWC files.
@@ -60,6 +67,8 @@ def check_required_submission_files(zip_path):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
+    block_nums : List[str]
+        Block numbers to use in evaluation.
     """
     # Subroutines
     def check_file(filename):
@@ -75,14 +84,14 @@ def check_required_submission_files(zip_path):
         assert utils.is_file_in_zip(zip_path, filename), err_msg
 
     # Main
-    for num in tqdm(BLOCK_NUMS, desc="Checking Required Files"):
+    for num in tqdm(block_nums, desc="Checking Required Files"):
         utils.find_compressed_path(zip_path, f"compressed_{num}")
         check_file(f"decompressed_{num}.tiff")
         check_file(f"segmentation_{num}.tiff")
         check_file(f"skeletons_{num}.zip")
 
 
-def check_ssim(zip_path):
+def check_ssim(zip_path, block_nums):
     """
     Checks the decompressed image quality for all benchmark blocks by
     computing the Structural Similarity Index (SSIM) between decompressed
@@ -92,12 +101,14 @@ def check_ssim(zip_path):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
+    block_nums : List[str]
+        Block numbers specifying what blocks to use in evaluation.
     """
     img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
     with ProcessPoolExecutor() as executor:
         # Assign processes
         pending = dict()
-        for num in BLOCK_NUMS:
+        for num in block_nums:
             # Set paths
             decompressed_filename = f"decompressed_{num}.tiff"
             original_path = f"{img_root}/block_{num}/input.zarr/0"
@@ -109,7 +120,7 @@ def check_ssim(zip_path):
             pending[thread] = num
 
         # Process results
-        pbar = tqdm(total=len(BLOCK_NUMS), desc="Checking SSIM")
+        pbar = tqdm(total=len(block_nums), desc="Checking SSIM")
         for thread in as_completed(pending.keys()):
             num = pending.pop(thread)
             ssim = thread.result()
@@ -146,7 +157,7 @@ def _compute_ssim(original_path, zip_path, decompressed_filename):
     return ssim
 
 
-def check_segmentation_consistency(zip_path):
+def check_segmentation_consistency(zip_path, block_nums):
     """
     Checks segmentation results against baseline metrics to ensure
     consistency.
@@ -155,9 +166,11 @@ def check_segmentation_consistency(zip_path):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
+    block_nums : List[str]
+        Block numbers specifying what blocks to use in evaluation.
     """
-    move_skeleton_zips(zip_path)
-    for num in tqdm(BLOCK_NUMS, desc="Checking Segmentation"):
+    move_skeleton_zips(zip_path, block_nums)
+    for num in tqdm(block_nums, desc="Checking Segmentation"):
         # Load segmentation results
         result_baseline = load_baseline_segmentation_result(num)
         result_submission = compute_segmentation_metrics(zip_path, num)
@@ -173,7 +186,7 @@ def check_segmentation_consistency(zip_path):
 
 
 # --- Compute Score ---
-def compute_compressed_size(zip_path):
+def compute_compressed_size(zip_path, block_nums):
     """
     Computes the average compressed file size (in GBs) across all blocks in a
     ZIP archive.
@@ -182,6 +195,8 @@ def compute_compressed_size(zip_path):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
+    block_nums : List[str]
+        Block numbers specifying what blocks to use in evaluation.
 
     Returns
     -------
@@ -190,7 +205,7 @@ def compute_compressed_size(zip_path):
     """
     # Compute score
     compressed_size = list()
-    for num in tqdm(BLOCK_NUMS, "Compute Compressed Size"):
+    for num in tqdm(block_nums, "Compute Compressed Size"):
         # Find path to compressed image
         name = f"compressed_{num}"
         compressed_img_path = utils.find_compressed_path(zip_path, name)
@@ -315,7 +330,7 @@ def load_baseline_segmentation_result(num):
     return fill_nan_results(result)
 
 
-def move_skeleton_zips(zip_path):
+def move_skeleton_zips(zip_path, block_nums):
     """
     Extracts specific skeleton ZIP archives from a parent ZIP file and moves
     them into a temporary directory. This extraction ensures that the SWC
@@ -326,13 +341,15 @@ def move_skeleton_zips(zip_path):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
+    block_nums : List[str]
+        Block numbers specifying what blocks to use in evaluation.
     """
     # Initialize temp directory
     output_dir = "./temp/"
     utils.mkdir(output_dir)
 
     # Iterate over skeletons
-    for num in BLOCK_NUMS:
+    for num in block_nums:
         source_filename = f"skeletons_{num}.zip"
         destination_path = f"{output_dir}/skeletons_{num}.zip"
         utils.move_zip_in_zip(zip_path, source_filename, destination_path)
