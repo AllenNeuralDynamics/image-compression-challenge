@@ -105,7 +105,7 @@ def check_ssim(zip_path, block_nums):
         Block numbers specifying what blocks to use in evaluation.
     """
     img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
-    with ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor(max_workers=2) as executor:
         # Assign processes
         pending = dict()
         for num in block_nums:
