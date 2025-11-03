@@ -124,7 +124,7 @@ def check_ssim(zip_path, block_nums):
         for thread in as_completed(pending.keys()):
             num = pending.pop(thread)
             ssim = thread.result()
-            assert ssim > 0.7, f"Failed with SSIM={ssim} on block {num}"
+            assert ssim > 0.9, f"Failed with SSIM={ssim} on block {num}"
             pbar.update(1)
 
 
