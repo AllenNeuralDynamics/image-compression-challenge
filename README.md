@@ -67,9 +67,10 @@ from image_compression_challenge.score import score
 
 # Initializations
 submission_zip_path = "path-to-submission-zip"
+use_test_blocks = True
 
 # Main
-score(submission_zip_path)
+score(submission_zip_path, use_test_blocks=use_test_blocks)
 
 ```
 
