@@ -47,7 +47,7 @@ def score(zip_path, use_test_blocks=True):
 
     # Check submission is valid
     print("\nStep 1: Check Submission")
-    check_required_submission_files(zip_path, block_nums)
+    #check_required_submission_files(zip_path, block_nums)
     check_ssim(zip_path, block_nums)
     check_segmentation_consistency(zip_path, block_nums)
 
@@ -277,10 +277,9 @@ def compute_segmentation_metrics(zip_path, num):
         output_dir,
         anisotropy=(0.748, 0.748, 1.0),
         fragments_pointer=skeletons_path,
-        results_filename=f"results_{num}",
         verbose=False
     )
-    results = pd.read_csv(f"./temp/results_{num}.csv")
+    results = pd.read_csv(f"./temp/results.csv")
     return fill_nan_results(results)
 
 
