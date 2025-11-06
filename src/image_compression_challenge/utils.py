@@ -13,10 +13,9 @@ from skimage.metrics import structural_similarity as ssim
 import numpy as np
 import io
 import os
-import s3fs
 import shutil
+import tensorstore as ts
 import tifffile
-import zarr
 import zipfile
 
 
@@ -64,7 +63,7 @@ def find_compressed_path(zip_path, filename):
     filename : str
         Name of compressed file.
     """
-    with zipfile.ZipFile(zip_path, 'r') as z:
+    with zipfile.ZipFile(zip_path, "r") as z:
         for name in [n for n in z.namelist()]:
             if filename in name and "decompressed" not in name:
                 return name
@@ -82,7 +81,7 @@ def find_decompressed_path(zip_path, filename):
     filename : str
         Name of compressed file.
     """
-    with zipfile.ZipFile(zip_path, 'r') as z:
+    with zipfile.ZipFile(zip_path, "r") as z:
         for name in [n for n in z.namelist()]:
             if filename in name:
                 return name
@@ -100,7 +99,7 @@ def is_file_in_zip(zip_path, filename):
     filename : str
         Filename to be searched for in ZIP archive.
     """
-    with zipfile.ZipFile(zip_path, 'r') as z:
+    with zipfile.ZipFile(zip_path, "r") as z:
         namelist = [os.path.basename(n) for n in z.namelist()]
         return filename in namelist
 
@@ -119,7 +118,7 @@ def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
     output_path : str
         Destination path where the extracted inner ZIP should be saved.
     """
-    with zipfile.ZipFile(outer_zip_path, 'r') as outer_zip:
+    with zipfile.ZipFile(outer_zip_path, "r") as outer_zip:
         # Find file path
         name_list = outer_zip.namelist()
         matches = [f for f in name_list if f.endswith(inner_zip_name)]
@@ -129,7 +128,7 @@ def move_zip_in_zip(outer_zip_path, inner_zip_name, output_path):
 
         # Move file
         inner_zip_bytes = outer_zip.read(filename)
-        with open(output_path, 'wb') as f_out:
+        with open(output_path, "wb") as f_out:
             f_out.write(inner_zip_bytes)
 
 
@@ -166,10 +165,62 @@ def compute_ssim(img1, img2, axis=0, win_size=7):
             img1[i, ...],
             img2[i, ...],
             data_range=data_range,
-            win_size=win_size
+            win_size=win_size,
         )
         ssim_values.append(val)
     return np.mean(ssim_values)
+
+
+def get_tensorstore_args(img_path):
+    """
+    Gets the arguments needed to use tensorstore to read the given zarr image.
+
+    Parameters
+    ----------
+    img_path : str
+        Path to image to be read.
+
+    Returns
+    -------
+    tensorstore_args : dict
+        Arguments needed to use tensorstore to read the given zarr image.
+    """
+    if img_path.startswith("s3://"):
+        bucket_name, path = parse_cloud_path(img_path)
+        tensorstore_args = {
+            "driver": "zarr",
+            "kvstore": {"driver": "s3", "bucket": bucket_name, "path": path},
+        }
+    else:
+        tensorstore_args = {
+            "driver": "zarr",
+            "kvstore": {"driver": "file", "path": img_path},
+        }
+    return tensorstore_args
+
+
+def parse_cloud_path(path):
+    """
+    Parses a cloud storage path into its bucket name and key/prefix. Supports
+    paths of the form: "s3://bucket_name/prefix" or without a scheme.
+
+    Parameters
+    ----------
+    path : str
+        Path to be parsed.
+
+    Returns
+    -------
+    bucket_name : str
+        Name of the bucket.
+    prefix : str
+        Cloud prefix.
+    """
+    path = path[len("s3://"):]
+    parts = path.split("/", 1)
+    bucket_name = parts[0]
+    prefix = parts[1] if len(parts) > 1 else ""
+    return bucket_name, prefix
 
 
 def read_zarr(img_path):
@@ -183,12 +234,13 @@ def read_zarr(img_path):
 
     Returns
     -------
-    img : zarr.ndarray
+    img : numpy.ndarray
         Image volume.
     """
-    store = s3fs.S3Map(root=img_path, s3=s3fs.S3FileSystem(anon=True))
-    img = zarr.open(store, mode="r")
-    return img[:]
+    args = get_tensorstore_args(img_path)
+    img = ts.open(args, open=True).result()
+    img = img.read().result()[:]
+    return img
 
 
 def read_zipped_tiff(zip_path, filename):
@@ -210,7 +262,8 @@ def read_zipped_tiff(zip_path, filename):
     with zipfile.ZipFile(zip_path, "r") as z:
         # Collect only valid TIFF files, ignoring __MACOSX junk
         tiff_files = [
-            f for f in z.namelist()
+            f
+            for f in z.namelist()
             if f.lower().endswith((".tif", ".tiff"))
             and not os.path.basename(f).startswith("._")
         ]

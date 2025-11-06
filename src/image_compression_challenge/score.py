@@ -22,11 +22,7 @@ from image_compression_challenge import utils
 
 VALIDATE_NUMS = ["000", "001", "002", "003", "004"]
 TEST_NUMS = ["005", "006", "007", "008", "009"]
-ERROR_TOLS = {
-    "% Omit Edges": 10,
-    "Split Rate": 1000,
-    "Merge Rate": 1000
-}
+ERROR_TOLS = {"% Omit Edges": 10, "Split Rate": 1000, "Merge Rate": 1000}
 
 
 def score(zip_path, use_test_blocks=True):
@@ -47,7 +43,7 @@ def score(zip_path, use_test_blocks=True):
 
     # Check submission is valid
     print("\nStep 1: Check Submission")
-    #check_required_submission_files(zip_path, block_nums)
+    # check_required_submission_files(zip_path, block_nums)
     check_ssim(zip_path, block_nums)
     check_segmentation_consistency(zip_path, block_nums)
 
@@ -70,6 +66,7 @@ def check_required_submission_files(zip_path, block_nums):
     block_nums : List[str]
         Block numbers to use in evaluation.
     """
+
     # Subroutines
     def check_file(filename):
         """
@@ -237,9 +234,9 @@ def get_file_size(zip_path, filename):
     float
         Size of the given file.
     """
-    with zipfile.ZipFile(zip_path, 'r') as zf:
+    with zipfile.ZipFile(zip_path, "r") as zf:
         info = zf.getinfo(filename)
-        return info.file_size / 1024 ** 3
+        return info.file_size / 1024**3
 
 
 # --- Helpers ---
@@ -260,15 +257,15 @@ def compute_segmentation_metrics(zip_path, num):
         Data frame containing skeleton metric results.
     """
     # Paths
-    gt_path = f"s3://aind-benchmark-data/3d-image-compression/swcs/block_{num}/"
+    gt_path = (
+        f"s3://aind-benchmark-data/3d-image-compression/swcs/block_{num}/"
+    )
     segmentation_filename = f"segmentation_{num}.tiff"
     skeletons_path = f"./temp/skeletons_{num}.zip"
     output_dir = "./temp"
 
     # Read segmentation
-    segmentation = TiffReader(
-        zip_path, inner_tiff=segmentation_filename
-    )
+    segmentation = TiffReader(zip_path, inner_tiff=segmentation_filename)
 
     # Run evaluation
     evaluate(
@@ -277,9 +274,9 @@ def compute_segmentation_metrics(zip_path, num):
         output_dir,
         anisotropy=(0.748, 0.748, 1.0),
         fragments_pointer=skeletons_path,
-        verbose=False
+        verbose=False,
     )
-    results = pd.read_csv(f"./temp/results.csv")
+    results = pd.read_csv("./temp/results.csv")
     return fill_nan_results(results)
 
 
