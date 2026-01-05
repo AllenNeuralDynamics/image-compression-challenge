@@ -71,7 +71,11 @@ submission_zip_path = "path-to-submission-zip"
 use_test_blocks = True
 
 # Main
-score(submission_zip_path, running_on_kaggle=running_on_kaggle, use_test_blocks=use_test_blocks)
+score(
+   submission_zip_path,
+   running_on_kaggle=running_on_kaggle,
+   use_test_blocks=use_test_blocks
+)
 
 ```
 
