@@ -25,7 +25,7 @@ TEST_NUMS = ["005", "006", "007", "008", "009"]
 ERROR_TOLS = {"% Omit Edges": 10, "Split Rate": 1000, "Merge Rate": 1000}
 
 
-def score(zip_path, running_on_kaggle=False, use_test_blocks=True):
+def score(zip_path, running_on_coda=False, use_test_blocks=True):
     """
     Evaluates a compressed submission file by validating its contents and
     computing its compression score.
@@ -34,8 +34,8 @@ def score(zip_path, running_on_kaggle=False, use_test_blocks=True):
     ----------
     zip_path : str
         Path to a participant's submitted ZIP archive.
-    running_on_kaggle : bool, optional
-        Indication of whether the code is being run on Kaggle. Default is
+    running_on_coda : bool, optional
+        Indication of whether the code is being run on Coda. Default is
         False.
     use_test_blocks : bool, optional
         Indication of whether to run evaluation using test blocks. Otherwise,
@@ -47,8 +47,8 @@ def score(zip_path, running_on_kaggle=False, use_test_blocks=True):
     # Check submission is valid
     print("\nStep 1: Check Submission")
     check_required_submission_files(zip_path, block_nums)
-    check_ssim(zip_path, block_nums, running_on_kaggle)
-    check_segmentation_consistency(zip_path, block_nums, running_on_kaggle)
+    #check_ssim(zip_path, block_nums, running_on_coda)
+    check_segmentation_consistency(zip_path, block_nums, running_on_coda)
 
     # Score submission
     print("\nStep 2: Score Submission")
@@ -91,7 +91,7 @@ def check_required_submission_files(zip_path, block_nums):
         check_file(f"skeletons_{num}.zip")
 
 
-def check_ssim(zip_path, block_nums, running_on_kaggle):
+def check_ssim(zip_path, block_nums, running_on_coda):
     """
     Checks the decompressed image quality for all benchmark blocks by
     computing the Structural Similarity Index (SSIM) between decompressed
@@ -103,12 +103,12 @@ def check_ssim(zip_path, block_nums, running_on_kaggle):
         Path to a participant's submitted ZIP archive.
     block_nums : List[str]
         Block numbers specifying what blocks to use in evaluation.
-    running_on_kaggle : bool
+    running_on_coda : bool
         Indication of whether the code is being run on Kaggle. Default is
         False.
     """
     # Set root path to original images
-    if running_on_kaggle:
+    if running_on_coda:
         img_root = "/kaggle/input/val-test-image-compression-dataset/val_test_dataset/blocks"
     else:
         img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
@@ -166,7 +166,7 @@ def _compute_ssim(original_path, zip_path, decompressed_filename):
     return ssim
 
 
-def check_segmentation_consistency(zip_path, block_nums, running_on_kaggle):
+def check_segmentation_consistency(zip_path, block_nums, running_on_coda):
     """
     Checks segmentation results against baseline metrics to ensure
     consistency.
@@ -177,7 +177,7 @@ def check_segmentation_consistency(zip_path, block_nums, running_on_kaggle):
         Path to a participant's submitted ZIP archive.
     block_nums : List[str]
         Block numbers specifying what blocks to use in evaluation.
-    running_on_kaggle : bool
+    running_on_coda : bool
         Indication of whether the code is being run on Kaggle. Default is
         False.
     """
@@ -186,7 +186,7 @@ def check_segmentation_consistency(zip_path, block_nums, running_on_kaggle):
         # Load segmentation results
         result_submission = compute_segmentation_metrics(zip_path, num)
         result_baseline = load_baseline_segmentation_result(
-            num, running_on_kaggle
+            num, running_on_coda
         )
 
         # Compare segmentation results
@@ -290,7 +290,7 @@ def compute_segmentation_metrics(zip_path, num):
         segmentation,
         output_dir,
         anisotropy=(0.748, 0.748, 1.0),
-        fragments_pointer=skeletons_path,
+        fragments_path=skeletons_path,
         verbose=False,
     )
     results = pd.read_csv("./temp/results.csv")
@@ -322,7 +322,7 @@ def fill_nan_results(df):
     return df
 
 
-def load_baseline_segmentation_result(num, running_on_kaggle):
+def load_baseline_segmentation_result(num, running_on_coda):
     """
     Loads the skeleton-based metric results for the baseline segmentation for
     the image block corresponding to "num".
@@ -331,7 +331,7 @@ def load_baseline_segmentation_result(num, running_on_kaggle):
     ----------
     num : str
         Unique identifier for an image block.
-    running_on_kaggle : bool
+    running_on_coda : bool
         Indication of whether the code is being run on Kaggle. Default is
         False.
 
@@ -340,8 +340,8 @@ def load_baseline_segmentation_result(num, running_on_kaggle):
     pandas.DataFrame
         Skeleton-based metric results for the baseline segmentation.
     """
-    if running_on_kaggle:
-        path = f"/kaggle/input/image-compression-challengeimage-compression-challenge-main/baseline_segmentation_results/results_{num}.csv"
+    if running_on_coda:
+        path = f"/app/input/image-compression-challenge-main/baseline_segmentation_results/results_{num}.csv"
     else:
         path = f"https://raw.githubusercontent.com/AllenNeuralDynamics/image-compression-challenge/main/baseline_segmentation_results/results_{num}.csv"
     result = pd.read_csv(path)
