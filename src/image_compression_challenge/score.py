@@ -10,7 +10,7 @@ Code that scores submissions to the image compression data challenge.
 
 from concurrent.futures import as_completed, ProcessPoolExecutor
 from segmentation_skeleton_metrics.evaluate import evaluate
-from segmentation_skeleton_metrics.utils.img_util import TiffReader
+from segmentation_skeleton_metrics.utils.img_util import TiffImage
 from segmentation_skeleton_metrics.utils.util import compute_weighted_avg
 from tqdm import tqdm
 
@@ -282,7 +282,7 @@ def compute_segmentation_metrics(zip_path, num):
     output_dir = "./temp"
 
     # Read segmentation
-    segmentation = TiffReader(zip_path, inner_tiff=segmentation_filename)
+    segmentation = TiffImage(zip_path, inner_tiff=segmentation_filename)
 
     # Run evaluation
     evaluate(
