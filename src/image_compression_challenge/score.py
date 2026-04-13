@@ -48,7 +48,7 @@ def score(zip_path, running_on_coda=False, use_test_blocks=True):
     # Check submission is valid
     print("\nStep 1: Check Submission")
     check_required_submission_files(zip_path, block_nums)
-    #check_ssim(zip_path, block_nums, running_on_coda)
+    check_ssim(zip_path, block_nums, running_on_coda)
     check_segmentation_consistency(zip_path, block_nums)
 
     # Score submission
@@ -109,10 +109,10 @@ def check_ssim(zip_path, block_nums, running_on_coda):
         False.
     """
     # Set root path to original images
-    if running_on_coda:
-        img_root = "/kaggle/input/val-test-image-compression-dataset/val_test_dataset/blocks"
-    else:
-        img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
+    #if running_on_coda:
+    #    img_root = "/kaggle/input/val-test-image-compression-dataset/val_test_dataset/blocks"
+    #else:
+    img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
 
     # Compute SSIM
     with ProcessPoolExecutor(max_workers=2) as executor:
