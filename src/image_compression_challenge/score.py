@@ -162,8 +162,12 @@ def _compute_ssim(original_path, zip_path, decompressed_filename):
     decompressed = utils.read_zipped_tiff(zip_path, decompressed_filename)
     original = utils.read_zarr(original_path)
 
+    # Downsample images
+    decompressed = utils.downsample_mean_2x(decompressed[0, 0])
+    original = utils.downsample_mean_2x(original[0, 0])
+
     # Compute metric
-    ssim = utils.compute_ssim(decompressed[0, 0], original[0, 0])
+    ssim = utils.compute_ssim(decompressed, original)
     return ssim
 
 

@@ -171,6 +171,15 @@ def compute_ssim(img1, img2, axis=0, win_size=7):
     return np.mean(ssim_values)
 
 
+def downsample_mean_2x(img):
+    z, y, x = img.shape
+    return img.reshape(
+        z//2, 2,
+        y//2, 2,
+        x//2, 2
+    ).mean(axis=(1, 3, 5))
+
+
 def get_tensorstore_args(img_path):
     """
     Gets the arguments needed to use tensorstore to read the given zarr image.
