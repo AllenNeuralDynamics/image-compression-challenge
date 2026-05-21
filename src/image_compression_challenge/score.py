@@ -105,13 +105,10 @@ def check_ssim(zip_path, block_nums, running_on_coda):
     block_nums : List[str]
         Block numbers specifying what blocks to use in evaluation.
     running_on_coda : bool
-        Indication of whether the code is being run on Kaggle. Default is
+        Indication of whether the code is being run on Coda. Default is
         False.
     """
     # Set root path to original images
-    #if running_on_coda:
-    #    img_root = "/kaggle/input/val-test-image-compression-dataset/val_test_dataset/blocks"
-    #else:
     img_root = "s3://aind-benchmark-data/3d-image-compression/blocks"
 
     # Compute SSIM
